@@ -1,0 +1,50 @@
+
+
+
+
+
+import streamlit as st
+import os
+from google import genai
+
+# Create Gemini client (NO configure)
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+st.set_page_config(page_title="AI Career Path Advisor", page_icon="🎓", layout="centered")
+
+st.markdown("<h1 style='text-align: center; color: #4CAF50;'>🎓 AI Career Path Advisor</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: gray;'>Enter your skills to get personalized career suggestions powered by AI.</p>", unsafe_allow_html=True)
+
+st.write("---")
+
+st.subheader("📝 Enter Your Skills")
+skills = st.text_area(
+    "List your skills separated by commas:",
+    placeholder="Python, Data Structures, SQL, Problem Solving",
+    height=120
+)
+
+if st.button("Analyze Career Options"):
+    if skills.strip() == "":
+        st.warning("⚠️ Please enter at least one skill.")
+    else:
+        with st.spinner("Analyzing your skills..."):
+            prompt = f"""
+You are a career guidance expert.
+
+Student skills: {skills}
+
+1. Suggest 3 suitable career paths.
+2. Required skills for each.
+3. Skill gaps.
+4. Simple improvement advice.
+"""
+
+            response = client.models.generate_content(
+                model="gemini-1.5-flash",
+                contents=prompt
+            )
+
+            st.write("---")
+            st.subheader("📊 Career Suggestions")
+            st.success(response.text)

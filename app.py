@@ -134,7 +134,7 @@ user_input = st.text_input(
 # --------------------------------------------------
 # PROCESSING CAREER MATCH
 # --------------------------------------------------
-if st.button("Analyze Career Options 🚀"):
+if st.button("Analyze Career Options 💁"):
 
     if user_input.strip() == "":
         st.warning("Please enter at least one skill.")
@@ -153,12 +153,12 @@ if st.button("Analyze Career Options 🚀"):
         # Save results to session_state
         st.session_state["career_results"] = results
 
-        st.success("🚀 Top Career Matches")
+        st.success("👍 Top Career Matches")
         for career, score, matched, missing in results[:3]:
             st.markdown(
 f"""
 <div class="career-card">
-  <h3>🎯 {career}</h3>
+  <h3>🧑‍💻/👩‍💻 {career}</h3>
   <p class="label">Match Score: {score}%</p>
   <div class="score-bar" style="width:{score}%"></div>
 
@@ -177,7 +177,7 @@ f"""
 # --------------------------------------------------
 if "career_results" in st.session_state:
     results = st.session_state["career_results"]
-    st.subheader("🎯 Deeper Career Guidance")
+    st.subheader("🧑‍💻 Deeper Career Guidance")
     tabs = st.tabs([career for career, _, _, _ in results[:3]])
 
     # ---------------- Predefined Links & Details ----------------
@@ -228,9 +228,9 @@ if "career_results" in st.session_state:
         with tabs[i]:
             insight = CAREER_INSIGHTS[career]
 
-            st.markdown(f"### 📌 Career Guidance: {career}")
+            st.markdown(f"### 👍 Career Guidance: {career}")
             st.markdown(f"**📊 Present Demand:** {insight['present']}")
-            st.markdown(f"**🚀 Future Scope:** {insight['future']}")
+            st.markdown(f"**👍 Future Scope:** {insight['future']}")
             st.markdown(f"**🤖 AI Advice:** Focus on real-world projects, internships, and consistent problem-solving.")
 
             # Function to create expandable details

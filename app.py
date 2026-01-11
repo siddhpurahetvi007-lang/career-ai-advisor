@@ -84,12 +84,65 @@ st.caption("AI-inspired career guidance • Edulnnovate hackathon")
 # --------------------------------------------------
 # CAREER DATA
 # --------------------------------------------------
+
 CAREER_DATA = {
-    "Software Developer": {"python", "java", "c", "dsa", "problem solving","c++","cpp"},
-    "Data Analyst": {"python", "sql", "excel", "statistics", "data analysis"},
-    "Cybersecurity Analyst": {"networking", "linux", "security", "python", "cryptography"},
-    "AI / ML Engineer": {"python", "machine learning", "math", "statistics", "data","ml",}
+    "Data Analyst": {
+        "skills": ["python", "sql", "excel", "statistics", "power bi"],
+        "demand": "High demand across finance, healthcare, and tech companies.",
+        "future": "Growing rapidly due to data-driven decision making.",
+        "companies": ["Google", "Amazon", "Deloitte", "Infosys"]
+    },
+
+    "Software Developer": {
+        "skills": ["python", "java", "c", "git", "oop"],
+        "demand": "Very high demand in software companies and startups.",
+        "future": "Strong long-term growth with AI and cloud expansion.",
+        "companies": ["Microsoft", "TCS", "Zoho", "Google"]
+    },
+
+    "Cybersecurity Analyst": {
+        "skills": ["networking", "linux", "security", "python", "ethical hacking"],
+        "demand": "High demand due to increasing cyber threats.",
+        "future": "Critical field with increasing importance.",
+        "companies": ["IBM", "Accenture", "Wipro", "Palo Alto"]
+    },
+
+    "AI Engineer": {
+        "skills": ["python", "machine learning", "tensorflow", "data science", "math"],
+        "demand": "Very high in AI startups and tech giants.",
+        "future": "One of the fastest growing tech careers.",
+        "companies": ["OpenAI", "Google", "NVIDIA", "Meta"]
+    },
+
+    "Web Developer": {
+        "skills": ["html", "css", "javascript", "react", "api"],
+        "demand": "High demand in digital businesses.",
+        "future": "Stable with increasing need for web apps.",
+        "companies": ["Flipkart", "Amazon", "Startups"]
+    },
+
+    "Cloud Engineer": {
+        "skills": ["aws", "linux", "docker", "kubernetes", "networking"],
+        "demand": "Very high in enterprise IT and startups.",
+        "future": "Massive growth due to cloud adoption.",
+        "companies": ["AWS", "Microsoft Azure", "Google Cloud"]
+    },
+
+    "UI/UX Designer": {
+        "skills": ["figma", "design", "ui", "ux", "prototyping"],
+        "demand": "High in product companies.",
+        "future": "Strong as user experience becomes critical.",
+        "companies": ["Adobe", "Swiggy", "Zomato"]
+    }
 }
+# ------------------------------
+# Utility Functions
+# ------------------------------
+def normalize(text):
+    return text.lower().replace(",", " ").replace("/", " ").strip()
+
+
+
 
 CAREER_INSIGHTS = {
     "Software Developer": {
@@ -119,11 +172,19 @@ CAREER_INSIGHTS = {
         "companies": ["OpenAI", "Google DeepMind", "Meta", "NVIDIA"],
         "hackathons": ["AI Hackathons", "Kaggle Competitions"],
         "competitions": ["Kaggle", "AIcrowd"]
+    },
+    "Web Developer": {
+    "present": "High demand in startups, digital agencies, and tech companies for building websites and web apps.",
+    "future": "Will remain strong as web technologies evolve, with growth in React, Next.js, and cloud-integrated apps.",
+    "companies": ["Flipkart", "Amazon", "TCS", "Zoho"],
+    "hackathons": ["Major League Hacking Web Challenges", "Google Solution Challenge", "Hackathons on Devpost"],
+    "competitions": ["CodeChef Web Challenges", "LeetCode Web Contests", "HackerRank Web Skills Contests"]
     }
+
 }
 
 # --------------------------------------------------
-# USER INPUT
+# USER INPUT & PROCESSING CAREER MATCH
 # --------------------------------------------------
 st.subheader("🔍 Enter your skills")
 user_input = st.text_input(
@@ -131,46 +192,57 @@ user_input = st.text_input(
     placeholder="Example: Python, SQL, problem solving"
 )
 
-# --------------------------------------------------
-# PROCESSING CAREER MATCH
-# --------------------------------------------------
-if st.button("Analyze Career Options 💁"):
+# Normalize and split user input into a list
+user_skills = []
+if user_input.strip():
+    user_skills = normalize(user_input).split()
 
-    if user_input.strip() == "":
-        st.warning("Please enter at least one skill.")
+# Show warning if empty input
+if not user_skills:
+    st.warning("Please enter at least one skill.")
+
+results = []
+
+# Only process if user entered skills and clicks button
+if user_skills and st.button("Analyze Career Options 💁"):
+    
+    # Calculate career matches
+    for career, info in CAREER_DATA.items():
+        required = info["skills"]
+
+        matched = []
+        for skill in required:
+            for u in user_skills:
+                if u in skill or skill in u:
+                    matched.append(skill)
+
+        match_percent = int((len(set(matched)) / len(required)) * 100)
+
+        if match_percent > 20:  # Only keep significant matches
+            results.append((career, match_percent, set(matched), set(required) - set(matched)))
+
+    results.sort(key=lambda x: x[1], reverse=True)
+
+    if not results:
+        st.warning("No strong career match found. Try adding more skills.")
     else:
-        user_skills = {s.strip().lower() for s in user_input.split(",")}
-        results = []
-
-        for career, skills in CAREER_DATA.items():
-            required = {s.lower() for s in skills}
-            matched = user_skills & required
-            score = int((len(matched) / len(required)) * 100)
-            results.append((career, score, matched, required - matched))
-
-        results.sort(key=lambda x: x[1], reverse=True)
-
-        # Save results to session_state
         st.session_state["career_results"] = results
-
         st.success("👍 Top Career Matches")
+
         for career, score, matched, missing in results[:3]:
-            st.markdown(
-f"""
+            st.markdown(f"""
 <div class="career-card">
   <h3>🧑‍💻/👩‍💻 {career}</h3>
   <p class="label">Match Score: {score}%</p>
   <div class="score-bar" style="width:{score}%"></div>
 
   <p><strong>Matched Skills:</strong><br>
-  {', '.join(sorted(matched)) if matched else 'None'}</p>
+  {', '.join(sorted(matched))}</p>
 
   <p><strong>Skills to Improve:</strong><br>
-  {', '.join(sorted(missing)) if missing else 'None'}</p>
+  {', '.join(sorted(missing))}</p>
 </div>
-""",
-                unsafe_allow_html=True
-            )
+""", unsafe_allow_html=True)
 
 # --------------------------------------------------
 # DEEPER GUIDANCE WITH EXPANDERS
@@ -228,7 +300,7 @@ if "career_results" in st.session_state:
         with tabs[i]:
             insight = CAREER_INSIGHTS[career]
 
-            st.markdown(f"### 👍 Career Guidance: {career}")
+            st.markdown(f"###📌 Career Guidance: {career}")
             st.markdown(f"**📊 Present Demand:** {insight['present']}")
             st.markdown(f"**👍 Future Scope:** {insight['future']}")
             st.markdown(f"**🤖 AI Advice:** Focus on real-world projects, internships, and consistent problem-solving.")

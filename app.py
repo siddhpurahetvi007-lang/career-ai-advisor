@@ -1,4 +1,6 @@
 import streamlit as st
+from fpdf import FPDF
+import base64
 
 # --------------------------------------------------
 # PAGE CONFIG
@@ -8,6 +10,14 @@ st.set_page_config(
     page_icon="🎓",
     layout="centered"
 )
+# --------------------------------------------------
+# RESET BAD SESSION DATA
+# --------------------------------------------------
+if "career_results" in st.session_state:
+    for c, _, _, _ in st.session_state["career_results"]:
+        if c not in ["Data Analyst","Software Developer","Cybersecurity Analyst","AI Engineer","Web Developer","Cloud Engineer","UI/UX Designer"]:
+            del st.session_state["career_results"]
+            break
 
 # --------------------------------------------------
 # CUSTOM UI STYLING
@@ -86,102 +96,68 @@ st.caption("AI-inspired career guidance • Edulnnovate hackathon")
 # --------------------------------------------------
 
 CAREER_DATA = {
-    "Data Analyst": {
-        "skills": ["python", "sql", "excel", "statistics", "power bi"],
-        "demand": "High demand across finance, healthcare, and tech companies.",
-        "future": "Growing rapidly due to data-driven decision making.",
-        "companies": ["Google", "Amazon", "Deloitte", "Infosys"]
-    },
+    "Data Analyst": {"skills":["python","sql","excel","statistics","power bi"]},
+    "Software Developer": {"skills":["python","java","c","git","oop"]},
+    "Cybersecurity Analyst": {"skills":["networking","linux","security","python","ethical hacking"]},
+    "AI Engineer": {"skills":["python","machine learning","tensorflow","data science","math"]},
+    "Web Developer": {"skills":["html","css","javascript","react","api"]},
+    "Cloud Engineer": {"skills":["aws","linux","docker","kubernetes","networking"]},
+    "UI/UX Designer": {"skills":["figma","design","ui","ux","prototyping"]}
 
-    "Software Developer": {
-        "skills": ["python", "java", "c", "git", "oop"],
-        "demand": "Very high demand in software companies and startups.",
-        "future": "Strong long-term growth with AI and cloud expansion.",
-        "companies": ["Microsoft", "TCS", "Zoho", "Google"]
-    },
-
-    "Cybersecurity Analyst": {
-        "skills": ["networking", "linux", "security", "python", "ethical hacking"],
-        "demand": "High demand due to increasing cyber threats.",
-        "future": "Critical field with increasing importance.",
-        "companies": ["IBM", "Accenture", "Wipro", "Palo Alto"]
-    },
-
-    "AI Engineer": {
-        "skills": ["python", "machine learning", "tensorflow", "data science", "math"],
-        "demand": "Very high in AI startups and tech giants.",
-        "future": "One of the fastest growing tech careers.",
-        "companies": ["OpenAI", "Google", "NVIDIA", "Meta"]
-    },
-
-    "Web Developer": {
-        "skills": ["html", "css", "javascript", "react", "api"],
-        "demand": "High demand in digital businesses.",
-        "future": "Stable with increasing need for web apps.",
-        "companies": ["Flipkart", "Amazon", "Startups"]
-    },
-
-    "Cloud Engineer": {
-        "skills": ["aws", "linux", "docker", "kubernetes", "networking"],
-        "demand": "Very high in enterprise IT and startups.",
-        "future": "Massive growth due to cloud adoption.",
-        "companies": ["AWS", "Microsoft Azure", "Google Cloud"]
-    },
-
-    "UI/UX Designer": {
-        "skills": ["figma", "design", "ui", "ux", "prototyping"],
-        "demand": "High in product companies.",
-        "future": "Strong as user experience becomes critical.",
-        "companies": ["Adobe", "Swiggy", "Zomato"]
-    }
 }
-# ------------------------------
-# Utility Functions
-# ------------------------------
-def normalize(text):
-    return text.lower().replace(",", " ").replace("/", " ").strip()
-
-
-
 
 CAREER_INSIGHTS = {
-    "Software Developer": {
-        "present": "High demand across startups, product companies, and service-based firms.",
-        "future": "Will remain evergreen with growth in AI-assisted development and cloud-native apps.",
-        "companies": ["Google", "Microsoft", "Amazon", "Infosys", "TCS", "Zoho"],
-        "hackathons": ["Smart India Hackathon", "Google Solution Challenge", "MLH Hackathons"],
-        "competitions": ["CodeChef", "LeetCode", "HackerRank"]
+    "Data Analyst":{
+        "present":"Strong demand in finance, healthcare, e-commerce, and analytics firms.",
+        "future":"Demand will grow with data-driven decision making and AI integration.",
+        "companies":["Deloitte","EY","Accenture","Amazon","Flipkart"],
+        "hackathons":["Analytics Vidhya Hackathons","Kaggle Days"],
+        "competitions":["Kaggle","StrataScratch"]
     },
-    "Data Analyst": {
-        "present": "Strong demand in finance, healthcare, e-commerce, and analytics firms.",
-        "future": "Demand will grow with data-driven decision making and AI integration.",
-        "companies": ["Deloitte", "EY", "Accenture", "Amazon", "Flipkart"],
-        "hackathons": ["Analytics Vidhya Hackathons", "Kaggle Days"],
-        "competitions": ["Kaggle", "StrataScratch"]
+    "Software Developer":{
+        "present":"High demand across startups, product companies, and service-based firms.",
+        "future":"Will remain evergreen with growth in AI-assisted development and cloud-native apps.",
+        "companies":["Google","Microsoft","Amazon","Infosys","TCS","Zoho"],
+        "hackathons":["Smart India Hackathon","Google Solution Challenge","MLH Hackathons"],
+        "competitions":["CodeChef","LeetCode","HackerRank"]
     },
-    "Cybersecurity Analyst": {
-        "present": "Rising demand due to increasing cyber threats and data breaches.",
-        "future": "Critical role as cloud, IoT, and digital payments expand.",
-        "companies": ["Cisco", "Palo Alto Networks", "IBM", "Microsoft"],
-        "hackathons": ["Cyber Apocalypse", "CTFtime Events"],
-        "competitions": ["Hack The Box", "TryHackMe"]
+    "Cybersecurity Analyst":{
+        "present":"Rising demand due to increasing cyber threats and data breaches.",
+        "future":"Critical role as cloud, IoT, and digital payments expand.",
+        "companies":["Cisco","Palo Alto Networks","IBM","Microsoft"],
+        "hackathons":["Cyber Apocalypse","CTFtime Events"],
+        "competitions":["Hack The Box","TryHackMe"]
     },
-    "AI / ML Engineer": {
-        "present": "High demand in AI startups, research labs, and big tech companies.",
-        "future": "Explosive growth as AI adoption increases across industries.",
-        "companies": ["OpenAI", "Google DeepMind", "Meta", "NVIDIA"],
-        "hackathons": ["AI Hackathons", "Kaggle Competitions"],
-        "competitions": ["Kaggle", "AIcrowd"]
+    "AI Engineer":{
+        "present":"High demand in AI startups and big tech companies.",
+        "future":"Explosive growth as AI adoption increases.",
+        "companies":["OpenAI","Google","NVIDIA","Meta"],
+        "hackathons":["AI Hackathons","Kaggle Competitions"],
+        "competitions":["Kaggle","AIcrowd"]
     },
-    "Web Developer": {
-    "present": "High demand in startups, digital agencies, and tech companies for building websites and web apps.",
-    "future": "Will remain strong as web technologies evolve, with growth in React, Next.js, and cloud-integrated apps.",
-    "companies": ["Flipkart", "Amazon", "TCS", "Zoho"],
-    "hackathons": ["Major League Hacking Web Challenges", "Google Solution Challenge", "Hackathons on Devpost"],
-    "competitions": ["CodeChef Web Challenges", "LeetCode Web Contests", "HackerRank Web Skills Contests"]
+    "Web Developer":{
+        "present":"High demand in startups, digital agencies, and tech companies.",
+        "future":"Strong growth with modern web frameworks and cloud apps.",
+        "companies":["Flipkart","Amazon","TCS","Zoho"],
+        "hackathons":["MLH Hackathons","Devpost Hackathons"],
+        "competitions":["HackerRank","LeetCode"]
+    },
+    "Cloud Engineer":{
+        "present":"Very high demand in enterprises and startups.",
+        "future":"Massive growth due to cloud adoption.",
+        "companies":["AWS","Microsoft","Google Cloud"],
+        "hackathons":["Cloud Hackathons"],
+        "competitions":["Cloud Skill Challenges"]
+    },
+    "UI/UX Designer":{
+        "present":"High demand in product companies.",
+        "future":"Growing importance of user experience.",
+        "companies":["Adobe","Swiggy","Zomato"],
+        "hackathons":["Design Hackathons"],
+        "competitions":["UX Challenges"]
     }
-
-}
+} 
+    
 
 # --------------------------------------------------
 # USER INPUT & PROCESSING CAREER MATCH
@@ -191,6 +167,13 @@ user_input = st.text_input(
     label="Your Skills",
     placeholder="Example: Python, SQL, problem solving"
 )
+# ------------------------------
+# Utility Functions
+# ------------------------------
+def normalize(text):
+    return text.lower().replace(",", " ").replace("/", " ").strip()
+
+
 
 # Normalize and split user input into a list
 user_skills = []
@@ -298,7 +281,12 @@ if "career_results" in st.session_state:
     # ---------------- Render tabs with expanders ----------------
     for i, (career, score, matched, missing) in enumerate(results[:3]):
         with tabs[i]:
-            insight = CAREER_INSIGHTS[career]
+            insight = CAREER_INSIGHTS.get(career)
+
+            if insight is None:
+              st.error(f"No insight data found for: {career}")
+              continue
+
 
             st.markdown(f"###📌 Career Guidance: {career}")
             st.markdown(f"**📊 Present Demand:** {insight['present']}")
@@ -342,14 +330,15 @@ if "career_results" in st.session_state:
         pdf.cell(0, 10, "Career AI Advisor Report", ln=True, align="C")
         pdf.ln(10)
 
-        for career, score, matched, missing in results[:3]:
+        for career, score, matched, missing in st.session_state["career_results"][:3]:
+            insight = CAREER_INSIGHTS.get(career)
             pdf.set_font("Arial", 'B', 14)
             pdf.cell(0, 10, f"{career} - Match Score: {score}%", ln=True)
             pdf.set_font("Arial", '', 12)
             pdf.multi_cell(0, 8, f"Matched Skills: {', '.join(sorted(matched)) if matched else 'None'}")
             pdf.multi_cell(0, 8, f"Skills to Improve: {', '.join(sorted(missing)) if missing else 'None'}")
 
-            insight = CAREER_INSIGHTS[career]
+            insight = CAREER_INSIGHTS.get(career)
             pdf.multi_cell(0, 8, f"Present Demand: {insight['present']}")
             pdf.multi_cell(0, 8, f"Future Scope: {insight['future']}")
             pdf.multi_cell(0, 8, f"AI Advice: Focus on real-world projects, internships, and consistent problem-solving.")

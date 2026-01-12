@@ -81,9 +81,27 @@ div.stButton > button {
 .label {
     color: #c7d2fe;
     font-weight: 600;
+      /* LINKS — lock all states so they do not affect accordion text */
+div[data-baseweb="accordion"] a,
+div[data-baseweb="accordion"] a:link,
+div[data-baseweb="accordion"] a:visited,
+div[data-baseweb="accordion"] a:active,
+div[data-baseweb="accordion"] a:focus {
+    color: #38bdf8 !important;
+    font-weight: 600;
+    text-decoration: none !important;
+}
+
+/* Hover effect only */
+div[data-baseweb="accordion"] a:hover {
+    color: #818cf8 !important;
+    text-decoration: underline !important;
+}
+      
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 # --------------------------------------------------
 # TITLE
